@@ -1,0 +1,14 @@
+#BlueJ class context
+comment0.params=foodName
+comment0.target=Food(java.lang.String)
+comment0.text=\ \ \r\n\ \ constructor\r\n\ \ @param\ <foodName>\r\n
+comment1.params=
+comment1.target=java.lang.String\ getFoodName()
+comment1.text=\ \ \r\n\ \ getter\r\n\ \ @return\ <foodName>\r\n
+comment2.params=food
+comment2.target=boolean\ isSameFood(Food)
+comment2.text=\ \ \r\n\ \ this\ method\ is\ to\ check\ if\ food\ is\ same\ as\ targetted\ food\r\n\ \ @param\ <food>\r\n\ \ @return\ <true\ if\ they\ are\ same>\r\n
+comment3.params=
+comment3.target=java.lang.String\ toString()
+comment3.text=\ \ \r\n\ \ toString\r\n\ \ @return\ <foodName>\r\n
+numComments=4

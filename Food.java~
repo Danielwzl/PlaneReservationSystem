@@ -1,0 +1,40 @@
+/**
+ * This class is for generating each food 
+ * @author  Zilong Wang 
+ * @version 1.0 
+ * Last Modified: <10-19-2015> - <adding comments> <Zilong Wang>                          
+ */
+public class Food
+{
+    public static final String FOOD_1 = "Kosher meal"; /**can they be class vars*/
+    public static final String FOOD_2 = "Vegan meal";
+    public static final String FOOD_3 = "Fish meal";
+    public static final String FOOD_4 = "Chicken meal";
+    public static final String FOOD_5 = "Beef meal";
+    private String foodName; 
+
+    /**  
+     *  constructor
+     *  @param <foodName>
+     */
+    public Food(String foodName){this.foodName = foodName;}
+
+    /**  
+     *  getter
+     *  @return <foodName>
+     */
+    public String getFoodName(){return foodName;}
+
+    /**  
+     *  this method is to check if food is same as targetted food
+     *  @param <food>
+     *  @return <true if they are same>
+     */
+    public boolean isSameFood(Food food){return this.getFoodName().equals(food.getFoodName());}
+
+    /**  
+     *  constructor
+     *  @return <foodName>
+     */
+    public String toString(){return foodName;}
+}

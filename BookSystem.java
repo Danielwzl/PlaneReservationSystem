@@ -1,0 +1,543 @@
+import java.sql.Timestamp;
+/**
+ * This class is the main system of booking system
+- 1. has booking function
+- 2. has modify function
+- 3. has cancel function
+- 4. display and update the reservation information on the screen
+ * @author  Zilong Wang 
+ * @version 1.0 
+ * Last Modified: <10-19-2015> - <adding comments> <Zilong Wang> 
+ *                <10-28-2015> - <adding function count the amount of each food's order> <Zilong Wang>
+ *                <11-02-2015> - <adding function diplay and search seat> <Zilong Wang>
+ */
+public class BookSystem
+{
+    private Menu menu; 
+    private final Food[] FOOD_LIST = {new Food(Food.FOOD_1), new Food(Food.FOOD_2), 
+            new Food(Food.FOOD_3), new Food(Food.FOOD_4), new Food(Food.FOOD_5)}; //array contains food
+    private final int NUM_OF_DIMENSION = 2, BOOK = 1, CANCEL = 2, MODIFY = 3 , SEARCH = 4, DISPLAY = 5, QUIT = 6;
+    private final Seat OCCUPIED_SEAT = new Seat('O'); //occupied seat
+    private BookingHistory[] history; //the size alread be defined in Plane class, null element will be catch when use it
+    private int[] coordinateOfSeats; //array contain row and column
+    private Seat[][] seats; 
+    private Person person;
+    private String timeStamp;
+    private int maxLengthOfCol, userChoice, numOfBooking, indexOfFood, index; //index: use for multiple loop
+
+    /**  
+     *  constructor
+     *  @param <seats> 
+     *  @param <menu>
+     *  @param <maxLengthOfCol: the most number of seats from each row>
+     *  @param <fileName: pass to RecordingSystem>
+     *  @param <history>
+     *  @param <numOfBooking>
+     */
+    public BookSystem(Menu menu, Seat[][] seats, int maxLengthOfCol, String fileName, BookingHistory[] history, int numOfBooking)
+    {
+        this.menu = menu; 
+        this.seats = seats;
+        this.maxLengthOfCol = maxLengthOfCol;
+        this.numOfBooking = numOfBooking;
+        this.history = history;
+        initialSystem(); //start the whole system
+        new RecordingSystem(this.history, seats, this.numOfBooking, fileName); //history nad numOfBooking is changing
+    }
+
+    /**  
+     *  This method is to start the system
+     */
+    private void initialSystem()
+    {
+        do{
+            index = 0; //reset index to 0, isOccupied function will use it again
+            resetScreen(); //show main screen content
+            mainMenuStart(); //main menu and user interaction
+        }while(!isQuit());
+        menu.ending(numOfBooking, history, foodOrderCounter(), FOOD_LIST);
+    }
+
+    /**  
+     *  This method is to generating the each option on the menu
+     */
+    private void mainMenuStart()
+    {
+        switch(userChoice = menu.enterChoiceFromMenu())
+        {
+            case BOOK: 
+            bookMenuStart();
+            break;
+
+            case CANCEL: 
+            cancelMenuStart();
+            break;
+
+            case MODIFY: 
+            modifyMenuStart();
+            break;
+
+            case SEARCH:
+            searchSeat();
+            break;
+
+            case DISPLAY:
+            displayBooking();
+            break;
+        }
+    }
+
+    /**
+     *  This method is to display all booking information on the screen
+     */
+    private void displayBooking()
+    {
+        menu.seatBookingSummary(history);
+        menu.pause("► Hit 'enter' to continue ->\n");
+    }
+
+    /**  
+     *  This method starts the sub menu for modify seats
+     */
+    private void modifyMenuStart()
+    {
+        actionMenuStart("select");
+        modifySeats();
+    }
+
+    /**  
+     *  This method starts the sub menu for cancel seats
+     */
+    private void cancelMenuStart()
+    {
+        actionMenuStart("verify");
+        cancelSeats();
+    }
+
+    /**  
+     *  This method starts the sub menu for book seats
+     */
+    private void bookMenuStart()
+    {
+        actionMenuStart("choose");
+        bookSeats();
+    }
+
+    /**  
+     *  This method is to get the user input of seat's position
+     *  @param <message: book, cancel and modify have different instruction sentences for user> 
+     */   
+    private void actionMenuStart(String message)
+    {
+        if(userChoice != MODIFY) person = menu.enterPersonalInfo(); //when user modify the seat, do not let them input personal information
+        coordinateOfSeats = new int[NUM_OF_DIMENSION];
+        menu.chooseSeats(coordinateOfSeats, message);   
+    }
+
+    /**  
+     *  This method is to flush the screen and update the information
+     */
+    private void resetScreen()
+    {
+        menu.flush(); //flush screen
+        menu.welcome(); //show welcome
+        showSeatsAvailable(); //print seats' status
+        menu.showSeatsExample(); //showing the meanning of each presenting character of seats
+    }
+
+    /**
+     *  This method is to show the page after user enter their preference of seat
+     */
+    private void searchSeat()
+    {
+        char userPreference = menu.askUserEnterPreference();
+        menu.flush();
+        menu.welcome();
+        showSeatsAvailable(userPreference);
+        menu.showSeatsExample(); //showing the meanning of each presenting character of seats
+        menu.pause("► Hit 'enter' to continue ->\n");
+    }
+
+    /**
+     *  Function Overload
+     *  This method is to show seat with user preferences
+     *  @param <userPreference>
+     */
+    private void showSeatsAvailable(char userPreference)
+    {
+        for(int i = 0; i < seats.length; i++)
+        {
+            for(int j = 0; j < seats[i].length; j++)
+            {
+                menu.seatFrameForBothSide(i, j, maxLengthOfCol); //creat 123456...for each col and row, show user the position of seats
+                if(seats[i][j].isSameTypeOfSeat(userPreference) // print seats with user search and not booked
+                && !isOccupied(i, j)) menu.presentSingleSeat(seats, i , j); 
+                else menu.printEmptySpace();
+            }
+            menu.newLine(); //go to next line when finish print a row
+        }
+    }
+
+    /**  
+     *  This method is to show seat reservation on the screen
+     */
+    private void showSeatsAvailable()
+    {
+        for(int i = 0; i < seats.length; i++)
+        {
+            for(int j = 0; j < seats[i].length; j++)
+            {
+                menu.seatFrameForBothSide(i, j, maxLengthOfCol); //creat 123456...for each col and row, show user the position of seats
+                if(isOccupied(i, j)) menu.presentOccupiedSeat(OCCUPIED_SEAT); //if there is record in history, update the booking UI and print
+                else menu.presentSingleSeat(seats, i , j); //else print booking UI with all available also
+            }
+            menu.newLine(); //go to next line when finish print a row
+        }
+    }
+
+    /**  
+     *  This method is to start book function if matching the condition
+     */
+    private void bookSeats()
+    {
+        if(isAnyAvailable())
+        {
+            if(isSeatExist())
+            {
+                if(!isOccupied()) book();
+                else menu.warnning("This seat is occupied");
+            }
+            else menu.warnning("The seat you chose does not exist!");
+        }
+        else menu.showBookFull();
+    }
+
+    /**  
+     *  This method is to start cancel function if matching the condition
+     */
+    private void cancelSeats()
+    {
+        if(isValidForCancel()) cancel();
+        else  menu.warnning("The personal information or seat is not matching!");
+    } 
+
+    /**  
+     *  This method is to start modify function if matching the condition
+     */
+    private void modifySeats()
+    {   
+        if(isOccupied()) modify();
+        else menu.warnning("The seat cannot modify, no one has booked");
+    }
+
+    /**  
+     *  This method is to store new booking information into history
+     */
+    private void book()
+    {
+        resetScreen(); 
+        indexOfFood = menu.chooseFood(FOOD_LIST); //get index of which food clients want
+        timeStamp = new Timestamp(System.currentTimeMillis()).toString(); //stamp the time of book
+        BookingHistory tempHistory = savingHistory(); //creat temp just for refreshing screen get new updated map of seats
+        numOfBooking++; //number increasing when seats get booked
+        resetScreen(); 
+        menu.confirmationPage(tempHistory); //print and creat one history object which contains client's information
+        menu.pause("► Hit 'enter' to continue ->\n");
+    }
+
+    /**  
+     *  This method is to delete booking information from history
+     */
+    private void cancel()
+    {
+        removeBooking();
+        numOfBooking--; //decreasing number when seats get cancelled
+        menu.pause("► Hit 'enter' to continue ->\n");
+    }
+
+    /**  
+     *  This method is to change booking information into history
+     */
+    private void modify()
+    {
+        int indexOfSeatForModify = index; //index from isOccupied, resetScreen will reset index to 0
+        resetScreen(); 
+        menu.displayDetailedBookingInformation(history[indexOfSeatForModify]); //display the reservation for modify
+        //if user answer no no no, then means no change made and do not show any update
+        if(isUserMadeChange(indexOfSeatForModify)) showInfoAfterModify(indexOfSeatForModify);
+        menu.pause("► Hit 'enter' to continue ->\n");
+    }
+
+    /**  
+     *  This method is to show confirmation page and update time
+     *  @param <modifiedIndex: the index in the history that user want to modify at> 
+     */
+    private void showInfoAfterModify(int modifiedIndex)
+    {
+        history[modifiedIndex].setTimeStamp(new Timestamp(System.currentTimeMillis()).toString()); //store new timestamp into history
+        resetScreen(); //update the seats map
+        menu.confirmationPage(history[modifiedIndex]); 
+    }   
+
+    /**
+     *  This method is to ask user make change and store them into history, return true if they make any change
+     *  @param <modifiedIndex>
+     *  @return <true if user made any change>
+     */
+    private boolean isUserMadeChange(int modifiedIndex)
+    {
+        boolean isChangeInfo = changePersonalInfo(modifiedIndex), //change personal information or skip, return boolean
+        isChangeSeat = changeSeat(modifiedIndex), //change seat information or skip, return boolean
+        isChangeMeal = changeMeal(modifiedIndex); //change food information or skip, return boolean 
+
+        return isChangeInfo || isChangeSeat || isChangeMeal;
+    }
+
+    /**
+     *  This method is to ask user make change and store them into history
+     *  return true if they make change of personal information
+     *  @param <modifiedIndex>
+     *  @return <true if user made any change>
+     */
+    private boolean changePersonalInfo(int modifiedIndex)
+    {
+        if(menu.confirmInfoToModify("► Do you want to change personal infomation"))
+        {
+            history[modifiedIndex].setPerson(menu.enterPersonalInfo());
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     *  This method is to ask user make change and store them into history
+     *  return true if they make change of seat
+     *  @param <modifiedIndex>
+     *  @return <true if user made any change>
+     */
+    private boolean changeSeat(int modifiedIndex)
+    {
+        if(menu.confirmInfoToModify("► Do you want to change seat")) 
+        {
+            reChooseSeat(modifiedIndex);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     *  This method is to ask user choose new seat
+     *  @param <modifiedIndex>
+     */
+    private void reChooseSeat(int modifiedIndex)
+    {
+        menu.chooseSeats(coordinateOfSeats, "choose new"); //ask user enter new seat
+        resetScreen(); //clear screen for showing the food menu without chaning the seats map before comfirmation page showing up
+        newSeatReplacement(modifiedIndex);
+    }
+
+    /**
+     *  This method is to ask user make change and store them into history
+     *  return true if they make change of meal
+     *  @param <modifiedIndex>
+     *  @return <true if user made any change>
+     */
+    private boolean changeMeal(int modifiedIndex)
+    {
+        if(menu.confirmInfoToModify("► Do you want to change meal"))
+        {
+            history[modifiedIndex].setFood(FOOD_LIST[menu.chooseFood(FOOD_LIST)]); //FOOD_LIST[indexOfFood], store new food into history
+            return true;
+        }
+        return false;
+    }
+
+    /** 
+     *  This method is to store their new seat
+     *  @param <modifiedIndex> 
+     */
+    private void newSeatReplacement(int modifiedIndex)
+    {
+        if(isSeatExist())
+        {
+            if(!isOccupied()) history[modifiedIndex].setCoordinateOfSeats(coordinateOfSeats); //store new seat into history
+            else 
+            {
+                menu.warnning("Modify seat failed! This seat is occupied!");
+                reChooseSeat(modifiedIndex); //ask user to choose seat
+            }
+        }
+        else
+        {
+            menu.warnning("Modify seat failed! This seat is not exist!");
+            reChooseSeat(modifiedIndex); //ask user to choose seat
+        }
+    }
+
+    /**  
+     *  This method is the actual function to store booking information into history array
+     *  @return <BookingHistory: current single element from history array>
+     */
+    private BookingHistory savingHistory()
+    {
+        return history[numOfBooking] = new BookingHistory(FOOD_LIST[indexOfFood], person, coordinateOfSeats, timeStamp); //save data into history
+    }
+
+    /**  
+     *  This method is to delete the booking information from the history
+     *  When people cancel the book, the element (at the index people will cancel in the array) will be the element at the one after
+     *  So, moving the element after the certain point to the pervious spot, in order to make sure there is no null in the middle. 
+     */
+    private void removeBooking()
+    {
+        while(hasNextHistory()) history[index++] = history[index]; 
+    }
+
+    /**  
+     *  This method is to count the amount of each food order
+     *  @return <counter: the array that ending page will use it>
+     */
+    private int[] foodOrderCounter()
+    {
+        int[] counter = new int[FOOD_LIST.length]; //the size will be same as how many kinds of food we cover
+        for(BookingHistory record: history)
+        {
+            if(record != null) counter[indexOf(record.getFood())]++; //increase the element in the array when the same index return back
+        }
+
+        return counter;
+    }
+
+    /**  
+     *  This method is to get index of each food order from the history in the FOOT_LIST
+     *  Because it will be easy to count the number of each food order
+     *  @param <food> 
+     *  @return <i: index in the FOOT_LIST>
+     */
+    private int indexOf(Food food)
+    {
+        for(int i = 0; i < FOOD_LIST.length; i++)
+        {
+            if(FOOD_LIST[i].isSameFood(food)) return i; //get the index of each food order in the FOOD_LIST array
+        }
+
+        return -1; 
+    }
+
+    /**  
+     *  This method is to check if valid to cancel
+     *  @return <true if personal information and seat matches any information in history>
+     */
+    private boolean isValidForCancel()
+    {
+        index = 0; //reset index to 0, isOccupied function used it before
+        while(hasNextHistory())
+        {
+            if(isIdentityVerified()) return true;
+            index++; //dont increase after find valid spot to cancel, removeBooking function will use it as index
+        }           
+
+        return false;
+    }
+
+    /**
+     *  Function Overload
+     *  For check user preference
+     *  This method is check if seat is booked by another person
+     *  @param <row>
+     *  @param <col>
+     *  @return <true if seat is booked>
+     */
+    private boolean isOccupied(int row, int col)
+    {
+        index = 0; //reset 0, update function used it
+        while(hasNextHistory())
+        {
+            if(isMatchSeatsInHistory(row, col)) 
+                return true;
+            index++;
+        }
+
+        return false; 
+    }
+
+    /**  
+     *  This method is check if seat is booked by another person
+     *  @return <true if seat is booked>
+     */
+    private boolean isOccupied()
+    {
+        index = 0; //reset 0, update function used it
+        while(isUpdate() && hasNextHistory())
+        {
+            if(isMatchSeatsInHistory()) 
+                return true;
+            index++;
+        }
+
+        return false; 
+    }
+
+    /**  
+     *  This method is to check if personal information and seat matches information in history
+     *  @return <true if personal information and seat matches single information in history>
+     */
+    private boolean isIdentityVerified()
+    {
+        return person.isSame(history[index].getPerson()) && isMatchSeatsInHistory();
+    }
+
+    /**  
+     *  This method is to check if seat exists
+     *  @return <true if seat exists>
+     */
+    private boolean isSeatExist()
+    {
+        //if row and col less than the length, then it is existing seats
+        return coordinateOfSeats[0] < seats.length && coordinateOfSeats[1] < seats[coordinateOfSeats[0]].length; 
+    }
+
+    /**  
+     *  Function overload
+     *  This method is to check if two seats are same one
+     *  @param <tempCoordinateOfSeats: row and column>
+     *  @return <true if seat user chooses matches in history>
+     */
+    private boolean isMatchSeatsInHistory(int... tempCoordinateOfSeats)
+    {
+        return history[index].isSameSeatInHistory(tempCoordinateOfSeats);
+    }
+
+    /**  
+     *  This method is to check if two seats are same one
+     *  @return <true if seat user chooses matches in history>
+     */
+    private boolean isMatchSeatsInHistory()
+    {
+        return history[index].isSameSeatInHistory(coordinateOfSeats);
+    }
+
+    /**  
+     *  This method is to check if it reaches the last booking history
+     *  @return <true if it has not reached the last booking history>
+     */
+    private boolean hasNextHistory(){return index < numOfBooking;}
+
+    /**  
+     *  This method is to check if it needs to update the information of booking reservation
+     *  @return <true if there is any element in the history>
+     */
+    private boolean isUpdate(){return numOfBooking != 0;}
+
+    /**  
+     *  This method is to check if all seats are booked
+     *  @return <true if number of booking less than the number of element in history>
+     */    
+    private boolean isAnyAvailable(){return numOfBooking < history.length;}
+
+    /**  
+     *  This method is to check if user want to quit
+     *  @return <true if user want to quit>
+     */    
+    private boolean isQuit(){return userChoice == QUIT;}
+}

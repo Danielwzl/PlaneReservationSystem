@@ -1,0 +1,37 @@
+/**
+ * Write a description of class Person here.
+ * 
+ * @author (your name) 
+ * @version (a version number or a date)
+ */
+public class Person
+{
+    private String name;
+    private int age;
+    
+    public Person(String name, int age)
+    {
+        this.name = name;
+        this.age = age;
+    }
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public int getAge()
+    {
+        return age;
+    }
+
+    public boolean isSame(Person person)
+    {
+        return this.name.equals(person.name) && this.age == person.age; //make sure the person want to cancel is the same one booked
+    }
+    
+    public String toString()
+    {
+        return name + " " + age;
+    }
+}

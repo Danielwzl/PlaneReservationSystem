@@ -1,0 +1,7 @@
+--> The seats' reservations on this plane
+--> Total number of reservations: 4
+	  -TIME OF BOOKING-            -NAME-              -AGE-    -FOOD-             -ROW-      -COLUMN-
+	2015-11-01 19:36:10.973     1                       1      Vegan meal            3           2             
+	2015-11-02 00:18:34.744     1                       1      Chicken meal          1           10            
+	2015-11-01 13:22:06.831     1                       1      Vegan meal            4           5             
+	2015-11-02 17:10:05.882     2                       2      Vegan meal            7           1             

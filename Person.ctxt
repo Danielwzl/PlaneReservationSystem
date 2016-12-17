@@ -1,0 +1,17 @@
+#BlueJ class context
+comment0.params=name\ age
+comment0.target=Person(java.lang.String,\ int)
+comment0.text=\ \ \r\n\ \ constructor\r\n\ \ @param\ <name>\ \r\n\ \ @param\ <age>\r\n
+comment1.params=
+comment1.target=java.lang.String\ getName()
+comment1.text=\ \ \r\n\ \ getter\r\n\ \ @return\ <name>\r\n
+comment2.params=
+comment2.target=int\ getAge()
+comment2.text=\ \ \r\n\ \ getter\r\n\ \ @return\ <age>\r\n
+comment3.params=person
+comment3.target=boolean\ isSame(Person)
+comment3.text=\ \ \r\n\ \ this\ method\ is\ to\ check\ if\ person\ is\ same\ people\ with\ target\ one\r\n\ \ @param\ <person>\r\n\ \ @return\ <true\ if\ they\ are\ same>\r\n
+comment4.params=
+comment4.target=java.lang.String\ toString()
+comment4.text=\ \ \r\n\ \ present\ a\ person\ with\ name\ and\ age\r\n\ \ @return\ <String\ type\ infomation\ of\ a\ person>\r\n
+numComments=5

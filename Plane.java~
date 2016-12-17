@@ -1,0 +1,124 @@
+import java.util.Scanner;
+import java.io.FileInputStream;
+
+/**
+ * This class is for reading the file and put seat object into 2D array
+ * @author  Zilong Wang 
+ * @version 1.0 
+ * Last Modified: <10-19-2015> - <adding comments> <Zilong Wang>
+ *                             
+ */
+public class Plane
+{
+    private Scanner scan;
+    private final int ERROR = -1;
+    private Seat[][] seats;
+    private int maxLengthOfCol, index, totalSeats, totalBooked;
+    private BookingHistory[] history;
+
+    public Plane(FileInputStream file, Menu menu, String fileName)
+    {
+        scan = new Scanner(file);
+        constructSeats(); //read the seats in the file
+        updateNewDataInfomationOnPlane(); //keep reading the file if original file has been updated
+        new BookSystem(menu, seats, maxLengthOfCol, fileName, history, totalBooked);
+    }
+
+    private void constructSeats()
+    {
+        seats = new Seat[showRow()][];
+        String seatsOneRow = null;
+        index = 0; //reset it to 0, re-use it as an index of seat in the 2D array
+        do{
+            seatsOneRow = oneColOfseats(); //scan each line of seats from the file
+            installAllRows(seatsOneRow, lengthOfCol(seatsOneRow.length())); //make each seats into 2D array
+        }while(!isReachTheLastSeat() && hasNextRowSeats()); //when it is not reaching the last seat and must have seats, it will read seats 
+    }
+
+    private int lengthOfCol(int length)
+    {
+        maxLengthOfCol = (maxLengthOfCol < length) ? length: maxLengthOfCol; //get the largest length of col from each row, for use of print frame
+        return length;
+    }
+
+    private void installAllRows(String seatsOneRow, int numOfSeatsOneRow)
+    {
+        Seat[] oneRow = new Seat[numOfSeatsOneRow];
+        seats[index++] = installSeatsOnEachRow(seatsOneRow, oneRow);
+    }
+
+    private Seat[] installSeatsOnEachRow(String seatsOneRow, Seat[] oneRow)
+    {
+        for(int i = 0; i < oneRow.length; i++)
+        {
+            oneRow[i] = new Seat(oneSeat(seatsOneRow, i));
+            totalSeats++; //get how many seats in total for generating the history array 
+        }
+
+        return oneRow;
+    }
+
+    private void updateNewDataInfomationOnPlane()
+    {
+        history = new BookingHistory[totalSeats]; //history array must be intialized with the size of exsiting number of seats
+        index = 0; //reset it to 0, re-use it as an index of seat in the 1D history array
+        final int DIMENSION = 2;
+        Person person = null;
+        Food food = null;
+        int[] coordinateOfSeats = null;
+        if(isReachTheLastSeat())
+        {
+            totalBooked = scan.nextInt();
+            while(scan.hasNext() && totalBooked > 0)
+            {
+                person = updatePersonInformation();
+                food = updateFoodOrder();
+                coordinateOfSeats = new int[DIMENSION];
+                updateSeatBooked(coordinateOfSeats);
+                history[index++] = new BookingHistory(food, person, coordinateOfSeats, scan.nextLine()); //last one is String time
+            }
+        }
+    }
+
+    private Person updatePersonInformation()
+    {
+        String name = scan.next();
+        while(!scan.hasNextInt())
+        {
+            name += (" " + scan.next());
+        }
+
+        return new Person(name, scan.nextInt()); //new Person(name, age)
+    }
+
+    private Food updateFoodOrder()
+    {
+        String food = scan.next();
+        while(!scan.hasNextInt())
+        {
+            food += (" " + scan.next());
+        }
+        
+        return new Food(food);
+    }
+    
+    private void updateSeatBooked(int[] coordinateOfSeats)
+    {
+        coordinateOfSeats[0] = scan.nextInt();
+        coordinateOfSeats[1] = scan.nextInt();
+    }
+
+    private int showRow()
+    {
+        if(scan.hasNextInt()) index = scan.nextInt();
+        return index;
+    }
+
+    private char oneSeat(String oneColOfSeats, int indexOfSeat){return oneColOfSeats.charAt(indexOfSeat);}
+
+    private String oneColOfseats(){return scan.next().toUpperCase();}
+
+    private boolean isReachTheLastSeat(){return scan.hasNextInt();}
+
+    private boolean hasNextRowSeats(){return scan.hasNext();}
+}

@@ -1,0 +1,14 @@
+#BlueJ class context
+comment0.params=singleSeat
+comment0.target=Seat(char)
+comment0.text=\ \ \r\n\ \ constructor\r\n\ \ @param\ <singleSeat>\r\n
+comment1.params=
+comment1.target=char\ getSingleSeat()
+comment1.text=\ \ \r\n\ \ getter\r\n\ \ @return\ <singleSeat>\r\n
+comment2.params=seat
+comment2.target=boolean\ isSameTypeOfSeat(char)
+comment2.text=\r\n\ \ This\ method\ is\ to\ check\ if\ seat\ types\ are\ same\r\n\ \ @param\ <seat>\r\n\ \ @return\ <ture\ if\ two\ seats'\ type\ are\ same>\r\n
+comment3.params=
+comment3.target=java.lang.String\ toString()
+comment3.text=\ \ \r\n\ \ present\ a\ single\ seat\r\n\ \ @return\ <|A|,\ |W|,\ |O|\ or\ |M|>\r\n
+numComments=4

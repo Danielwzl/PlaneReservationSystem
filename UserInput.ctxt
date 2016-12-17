@@ -1,0 +1,23 @@
+#BlueJ class context
+comment0.params=
+comment0.target=UserInput()
+comment0.text=\ \ \r\n\ \ constructor\r\n
+comment1.params=message
+comment1.target=java.lang.String\ chooseInfo(java.lang.String)
+comment1.text=\ \ \r\n\ \ This\ method\ is\ to\ ask\ user\ input\ something\r\n\ \ @param\ <message>\r\n\ \ @return\ <String\ type\ value\:\ A\ line\ of\ user\ input>\r\n
+comment2.params=message
+comment2.target=int\ chooseNum(java.lang.String)
+comment2.text=\ \ \r\n\ \ This\ method\ is\ to\ ask\ user\ input\ something\r\n\ \ @param\ <message>\r\n\ \ @return\ <Integer\ type\ value>\r\n
+comment3.params=message
+comment3.target=boolean\ yesOrNo(java.lang.String)
+comment3.text=\r\n\ \ This\ method\ is\ to\ ask\ user\ input\ y\ or\ n\r\n\ \ @return\ <true\ if\ enter\ y>\r\n
+comment4.params=message
+comment4.target=void\ pause(java.lang.String)
+comment4.text=\ \ \r\n\ \ This\ method\ is\ to\ pause\ the\ program\r\n\ \ @param\ <message>\r\n
+comment5.params=obj
+comment5.target=void\ sop(java.lang.Object)
+comment5.text=\ \ \r\n\ \ This\ method\ is\ to\ print\ something\ at\ same\ line\r\n\ \ @param\ <obj\:\ any\ type\ of\ object>\r\n
+comment6.params=obj
+comment6.target=void\ sopln(java.lang.Object)
+comment6.text=\ \ \r\n\ \ This\ method\ is\ to\ print\ something\ at\ different\ line\r\n\ \ @param\ <obj\:\ any\ type\ of\ object>\r\n
+numComments=7
